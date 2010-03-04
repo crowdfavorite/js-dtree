@@ -2,31 +2,31 @@
  * dTree 1.0
  * Crowd Favorite
  */
-(function($) {
+;(function($) {
 	$.fn.dtree = function() {
 		this
 			.attr('role','tree')
 			.attr('tabindex','0')
 			.addClass('dtree');
 
-		this.find('li')
+		this.find('> li, li > ul > li')
 			.attr('role','treeitem')
 			.attr('tabindex','-1')
 			.addClass('dtree_treeitem');
 
-		this.find('li ul').attr('role','group').addClass('dtree_group');
+		this.find('li > ul').attr('role','group').addClass('dtree_group');
 
-		this.find('li:has(ul)')
+		this.find('li:has(> ul)')
 			.addClass('dtree_expanded_false')
 			.addClass('dtree_has_ul')
 			.attr('aria-expanded','false');
 
+		// You can use your own custom toggle
 		this.find('.dtree_toggle_custom')
-			// You can use your own custom toggle
 			.addClass('dtree_toggle_expanded_false');
-
-		this.find('li:has(ul):not(:has(.dtree_toggle_custom))')
-			.prepend('<span title="Toggle branch" class="dtree_toggle dtree_toggle_expanded_false" role="presentation"></span>')
+			
+		this.find('li:has(> ul):not(:has(.dtree_toggle_custom))')
+			.prepend('<span title="Toggle branch" class="dtree_toggle dtree_toggle_expanded_false" role="presentation"></span> ');
 
 		this.find('.dtree_toggle, .dtree_toggle_custom')
 			.click(function(){
