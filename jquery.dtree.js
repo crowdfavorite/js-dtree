@@ -3,47 +3,108 @@
  * Crowd Favorite
  */
 ;(function($) {
-	$.fn.dtree = function() {
-		this
+	var DTree = function ($tree, opts, callback) {
+		$.extend(this.opts, opts);
+		
+		opts = this.opts;
+		
+		$tree
 			.attr('role','tree')
 			.attr('tabindex','0')
-			.addClass('dtree');
+			.addClass(opts.trunkClass);
 
-		this.find('> li, li > ul > li')
+		$tree.find('ul, ol')
+			.attr('role','group')
+			.addClass(opts.groupClass);
+
+		$tree.find('li')
 			.attr('role','treeitem')
-			.attr('tabindex','-1')
-			.addClass('dtree_treeitem');
-
-		this.find('li > ul').attr('role','group').addClass('dtree_group');
-
-		this.find('li:has(> ul)')
-			.addClass('dtree_expanded_false')
-			.addClass('dtree_has_ul')
-			.attr('aria-expanded','false');
-
-		// You can use your own custom toggle
-		this.find('.dtree_toggle_custom')
-			.addClass('dtree_toggle_expanded_false');
+			.attr('tabindex', '-1')
+			.addClass(opts.branchClass);
+		
+		$tree.find('li:has(ul), li:has(ol)')
+			.addClass(opts.branchHasGroupClass)
+			.each($.proxy(function (i , current) {
+				var $branch = $(current),
+					$toggle = this.createToggle($branch);
+				
+				this.closeGroup($toggle);
+				
+				$branch.prepend($toggle);
+			}, this));
+	};
+	DTree.prototype = {
+		opts: {
+			/* Root ul element */
+			trunkClass: 'tree',
+			/* nested uls */
+			groupClass: 'group',
+			/* li elements */
+			branchClass: 'branch',
+			branchHasGroupClass: 'has-group',
+			groupToggleClass: 'toggle',
+			groupOpenClass: 'open',
+			groupClosedClass: 'closed',
+			groupKey: 'for.cf',
+			branchKey: 'branch.cf'
+		},
+		
+		createToggle: function ($branch) {
+			var opts = this.opts,
+				$group = $branch.find('> ul, > ol'),
+				$toggle;
 			
-		this.find('li:has(> ul):not(:has(.dtree_toggle_custom))')
-			.prepend('<span title="Toggle branch" class="dtree_toggle dtree_toggle_expanded_false" role="presentation"></span> ');
+			$toggle = $('<span/>')
+				.addClass(opts.groupToggleClass)
+				.data(opts.groupKey, $group)
+				.data(opts.branchKey, $branch)
+				
+				.click($.proxy(function (e) {
+					var $this = $(e.currentTarget),
+						$branch = $this.data(opts.branchKey);
 
-		this.find('.dtree_toggle, .dtree_toggle_custom')
-			.click(function(){
-				var _this = $(this);
-				var _thisParent = _this.parent('li:has(ul)');
-				_this
-					.toggleClass('dtree_toggle_expanded_false')
-					.toggleClass('dtree_toggle_expanded_true');
-				_thisParent
-					.toggleClass('dtree_expanded_false')
-					.toggleClass('dtree_expanded_true');
-				if (_thisParent.attr('aria-expanded') == 'false') {
-					_thisParent.attr('aria-expanded','true');
-				} else {
-					_thisParent.attr('aria-expanded','false');
-				}
-				return false; // for custom toggles that are links
-			});
+					if ($branch.hasClass(opts.groupOpenClass)) {
+						this.closeGroup($this);
+					}
+					else {
+						this.openGroup($this);
+					};
+				}, this));
+			return $toggle;
+		},
+		
+		openGroup: function ($toggle) {
+			$toggle.each($.proxy(function(i, toggle){
+				var opts = this.opts,
+					$toggle = $(toggle),
+					$branch = $toggle.data(opts.branchKey);
+
+				$branch
+					.addClass(opts.groupOpenClass)
+					.removeClass(opts.groupClosedClass)
+					.attr('aria-expanded', 'true');
+			}, this));
+		},
+		
+		closeGroup: function ($toggle) {
+			$toggle.each($.proxy(function (i, toggle) {
+				var opts = this.opts,
+					$toggle = $(toggle),
+					$branch = $toggle.data(opts.branchKey),
+					$group = $toggle.data(opts.groupKey);
+
+				$branch
+					.addClass(opts.groupClosedClass)
+					.removeClass(opts.groupOpenClass)
+					.attr('aria-expanded', 'false');
+
+				// Trigger nested toggles
+				$group.find(opts.groupToggleClass).click();
+			}, this));
+		}
+	};
+	
+	$.fn.dtree = function(opts) {
+		new DTree(this, opts);
 	};
 })(jQuery);
