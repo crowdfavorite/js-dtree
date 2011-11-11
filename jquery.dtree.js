@@ -97,7 +97,7 @@
 					.attr('aria-expanded', 'false');
 
 				// Trigger nested toggles
-				$group.find(opts.groupToggleClass).click();
+				this.closeGroup($('.'+opts.groupToggleClass, $group));
 			}, this));
 		}
 	};
