@@ -10,7 +10,6 @@
 		
 		$tree
 			.attr('role','tree')
-			.attr('tabindex','0')
 			.addClass(opts.trunkClass);
 
 		$tree.find('ul, ol')
@@ -19,7 +18,6 @@
 
 		$tree.find('li')
 			.attr('role','treeitem')
-			.attr('tabindex', '-1')
 			.addClass(opts.branchClass);
 		
 		$tree.find('li:has(ul), li:has(ol)')
